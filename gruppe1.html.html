@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rock am Ring 2026 – Gruppe 1</title>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --font-body:"Satoshi",sans-serif;
+  --radius-md:.5rem;--radius-lg:.75rem;--radius-full:9999px;
+  --transition:150ms cubic-bezier(0.16,1,0.3,1);
+}
+[data-theme="dark"]{--bg:#0e0d0b;--surface:#161512;--surface-2:#1d1b18;--border:#2e2c28;--text:#d4d2ce;--text-muted:#6e6c68;--text-faint:#3e3c38;--card-bg:#1a1814;}
+[data-theme="light"]{--bg:#f5f3ef;--surface:#faf9f6;--surface-2:#fff;--border:#e0ddd8;--text:#1a1814;--text-muted:#6e6c68;--text-faint:#c0bdb8;--card-bg:#fff;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100dvh;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+
+/* LOADING */
+#loadingScreen{position:fixed;inset:0;background:var(--bg);z-index:2000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;}
+#loadingScreen h2{font-size:1.1rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;}
+#loadingScreen h2 span{color:#e63329;}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:#e63329;border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* SYNC STATUS */
+#syncStatus{position:fixed;bottom:12px;right:12px;z-index:500;font-size:.7rem;padding:5px 10px;border-radius:var(--radius-full);border:1px solid var(--border);background:var(--surface);color:var(--text-muted);display:flex;align-items:center;gap:5px;}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;}
+.sync-dot.offline{background:#e63329;}
+.sync-dot.syncing{background:#f59e0b;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+.theme-btn{position:fixed;top:12px;right:12px;z-index:200;width:34px;height:34px;border-radius:50%;background:var(--surface-2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:1rem;}
+
+/* HEADER */
+.header{text-align:center;padding:1.25rem 1rem 1rem;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+.header h1{font-size:clamp(1.2rem,3vw,1.8rem);font-weight:700;letter-spacing:.06em;text-transform:uppercase;}
+.header h1 span{color:#e63329;}
+.header-sub{font-size:.72rem;color:var(--text-muted);margin-top:2px;letter-spacing:.04em;text-transform:uppercase;}
+
+.instructions{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.75rem 1rem;margin:.75rem auto;max-width:1100px;font-size:.78rem;color:var(--text-muted);line-height:1.7;}
+.instructions strong{color:var(--text);}
+
+.participants-wrap{max-width:1100px;margin:0 auto .5rem;padding:0 1rem;}
+.participants-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:.4rem;}
+.participants{display:flex;flex-wrap:wrap;gap:.4rem;}
+.participant{display:flex;align-items:center;gap:6px;padding:5px 11px;border-radius:var(--radius-full);border:2px solid transparent;cursor:pointer;font-size:.78rem;font-weight:600;transition:all var(--transition);background:var(--surface-2);user-select:none;}
+.participant:hover{transform:translateY(-1px);}
+.participant.active{border-color:currentColor;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.3);}
+.participant .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+
+.controls{max-width:1100px;margin:0 auto .5rem;padding:0 1rem;display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;}
+.btn-sm{padding:5px 12px;border-radius:var(--radius-full);font-size:.72rem;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface-2);color:var(--text-muted);transition:all var(--transition);}
+.btn-sm:hover{color:var(--text);border-color:var(--text-muted);}
+.mode-info{font-size:.72rem;color:var(--text-muted);margin-left:auto;}
+
+.day-tabs{max-width:1100px;margin:0 auto .75rem;padding:0 1rem;display:flex;gap:.4rem;}
+.day-tab{padding:6px 14px;border-radius:var(--radius-full);font-size:.76rem;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface-2);color:var(--text-muted);transition:all var(--transition);text-transform:uppercase;letter-spacing:.04em;}
+.day-tab.active{background:#e63329;color:#fff;border-color:#e63329;}
+
+/* TIMETABLE */
+.tt-wrap{max-width:1100px;margin:0 auto;padding:0 1rem 3rem;overflow-x:auto;}
+.tt-grid{display:grid;grid-template-columns:48px 1fr 1fr 1fr;position:relative;}
+.tt-stage-header{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;font-weight:700;color:var(--text-muted);padding:.4rem .5rem;border-bottom:2px solid #e63329;text-align:center;background:var(--bg);position:sticky;top:0;z-index:10;}
+.tt-corner{background:var(--bg);position:sticky;top:0;z-index:11;}
+.tt-body{grid-column:1/-1;display:grid;grid-template-columns:48px 1fr 1fr 1fr;position:relative;}
+.tt-hour{grid-column:1;display:flex;align-items:flex-start;justify-content:flex-end;padding-right:6px;padding-top:2px;font-size:.62rem;color:var(--text-faint);font-variant-numeric:tabular-nums;pointer-events:none;}
+.tt-hline{position:absolute;left:48px;right:0;border-top:1px solid var(--border);pointer-events:none;}
+.tt-col{grid-column:span 1;position:relative;}
+.tt-card{position:absolute;left:2px;right:2px;background:var(--card-bg);border:1.5px solid var(--border);border-radius:6px;padding:4px 6px;cursor:pointer;overflow:hidden;transition:all var(--transition);display:flex;flex-direction:column;justify-content:flex-start;}
+.tt-card:hover{border-color:var(--text-muted);z-index:5;box-shadow:0 4px 12px rgba(0,0,0,.35);}
+.tt-card.selected-me{border-color:var(--active-color,#e63329);box-shadow:0 0 0 1.5px var(--active-color,#e63329);}
+.tt-card .c-name{font-size:.72rem;font-weight:700;line-height:1.15;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tt-card .c-time{font-size:.58rem;color:var(--text-muted);white-space:nowrap;}
+.tt-card .c-note{font-size:.56rem;color:#e6993a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tt-card .c-pips{display:flex;flex-wrap:wrap;gap:2px;margin-top:3px;}
+.tt-card .pip{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+
+/* OVERVIEW */
+.overview-wrap{max-width:1100px;margin:.5rem auto 3rem;padding:0 1rem;}
+.overview-title{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:.6rem;}
+.overview-table{width:100%;border-collapse:collapse;font-size:.7rem;}
+.overview-table th{text-align:left;padding:5px 8px;background:var(--surface-2);border:1px solid var(--border);font-weight:600;color:var(--text-muted);font-size:.65rem;text-transform:uppercase;letter-spacing:.05em;}
+.overview-table td{padding:5px 8px;border:1px solid var(--border);vertical-align:top;}
+.person-cell{display:flex;align-items:center;gap:5px;font-weight:600;}
+.person-cell .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.bands-list{display:flex;flex-wrap:wrap;gap:3px;}
+.band-tag{padding:2px 6px;border-radius:var(--radius-full);font-size:.62rem;font-weight:500;white-space:nowrap;}
+
+/* EXTRAS */
+.extra-wrap{max-width:1100px;margin:.5rem auto;padding:0 1rem 1.5rem;}
+.section-title{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:.75rem;padding-bottom:.4rem;border-bottom:1px solid var(--border);}
+
+/* Wetter */
+.wetter-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:.5rem;}
+.wetter-day{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-md);padding:.6rem .75rem;text-align:center;}
+.wetter-day .wd-date{font-size:.65rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:.3rem;}
+.wetter-day .wd-icon{font-size:1.6rem;line-height:1;margin-bottom:.2rem;}
+.wetter-day .wd-temp{font-size:.85rem;font-weight:700;color:var(--text);}
+.wetter-day .wd-info{font-size:.62rem;color:var(--text-muted);margin-top:.2rem;line-height:1.4;}
+
+/* Gruppen */
+.slot-block{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-md);padding:.6rem .75rem;margin-bottom:.5rem;}
+.slot-time{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#e63329;margin-bottom:.4rem;}
+.slot-group{display:flex;align-items:flex-start;gap:.4rem;margin-bottom:.3rem;flex-wrap:wrap;}
+.slot-band{font-size:.75rem;font-weight:700;color:var(--text);min-width:120px;}
+.slot-people{display:flex;flex-wrap:wrap;gap:3px;}
+.slot-person{padding:2px 7px;border-radius:var(--radius-full);font-size:.62rem;font-weight:600;}
+.slot-empty{font-size:.72rem;color:var(--text-faint);font-style:italic;}
+.spinner-sm{width:16px;height:16px;border:2px solid var(--border);border-top-color:#e63329;border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;}
+
+/* SPOTIFY */
+.spotify-wrap{max-width:1100px;margin:.5rem auto;padding:0 1rem 1rem;}
+.spotify-btn{display:inline-flex;align-items:center;gap:.5rem;padding:.6rem 1.2rem;background:#1DB954;color:#000;border-radius:var(--radius-full);font-size:.82rem;font-weight:700;text-decoration:none;transition:all var(--transition);}
+.spotify-btn:hover{background:#1ed760;transform:translateY(-1px);}
+.spotify-btn svg{width:18px;height:18px;}
+
+/* ── SPOTIFY ── */
+.spotify-wrap{max-width:1100px;margin:.5rem auto;padding:0 1rem 1rem;}
+.spotify-btn{display:inline-flex;align-items:center;gap:.5rem;padding:.65rem 1.4rem;background:#1DB954;color:#000;border-radius:var(--radius-full);font-size:.85rem;font-weight:700;text-decoration:none;transition:all var(--transition);}
+.spotify-btn:hover{background:#1ed760;transform:translateY(-1px);}
+.spotify-icon{width:20px;height:20px;flex-shrink:0;}
+
+/* ── RANKING ── */
+.ranking-wrap{max-width:1100px;margin:.5rem auto 3rem;padding:0 1rem;}
+.ranking-person-row{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem;}
+.rp-btn{display:flex;align-items:center;gap:6px;padding:5px 11px;border-radius:var(--radius-full);border:2px solid transparent;cursor:pointer;font-size:.78rem;font-weight:600;transition:all var(--transition);background:var(--surface-2);user-select:none;}
+.rp-btn:hover{transform:translateY(-1px);}
+.rp-btn.active{border-color:currentColor;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.3);}
+.rp-btn .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+
+.rk-list{display:flex;flex-direction:column;gap:.4rem;margin-bottom:1.5rem;}
+.rk-item{background:var(--card-bg);border:1.5px solid var(--border);border-radius:var(--radius-md);padding:.55rem .75rem;display:grid;grid-template-columns:24px 24px 1fr auto;align-items:center;gap:.5rem;transition:border-color var(--transition);}
+.rk-num{font-size:.7rem;font-weight:700;color:var(--text-faint);text-align:center;}
+.rk-arrows{display:flex;flex-direction:column;gap:2px;}
+.rk-arrow{width:22px;height:18px;border-radius:4px;border:1px solid var(--border);background:var(--surface-2);cursor:pointer;font-size:.65rem;display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:all var(--transition);line-height:1;}
+.rk-arrow:hover{background:var(--surface);color:var(--text);border-color:var(--text-muted);}
+.rk-arrow:disabled{opacity:.25;cursor:default;}
+.rk-info .rk-name{font-size:.78rem;font-weight:700;color:var(--text);line-height:1.2;}
+.rk-info .rk-day{font-size:.6rem;color:var(--text-muted);}
+.rk-scores{display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end;}
+.rk-score{width:24px;height:24px;border-radius:4px;border:1px solid var(--border);background:var(--surface-2);cursor:pointer;font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;color:var(--text-faint);transition:all var(--transition);}
+.rk-score:hover{border-color:var(--text-muted);color:var(--text);}
+.rk-score.on{background:#e63329;border-color:#e63329;color:#fff;}
+.rk-empty{font-size:.78rem;color:var(--text-muted);padding:.5rem 0;font-style:italic;}
+
+/* GROUP RESULTS */
+.gr-wrap{margin-top:1rem;}
+.gr-title{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:.6rem;padding-bottom:.4rem;border-bottom:1px solid var(--border);}
+.gr-item{display:flex;align-items:center;gap:.5rem;padding:.35rem 0;border-bottom:1px solid var(--border);}
+.gr-pos{font-size:.68rem;font-weight:700;color:var(--text-faint);min-width:22px;}
+.gr-band{flex:1;font-size:.75rem;font-weight:700;color:var(--text);}
+.gr-bar-wrap{flex:2;height:5px;border-radius:3px;background:var(--surface-2);}
+.gr-bar{height:100%;border-radius:3px;background:#e63329;transition:width .4s;}
+.gr-score{font-size:.75rem;font-weight:700;color:#e63329;min-width:34px;text-align:right;}
+.gr-dots{display:flex;gap:2px;flex-wrap:wrap;min-width:60px;justify-content:flex-end;}
+.gr-dot{width:7px;height:7px;border-radius:50%;}
+</style>
+</head>
+<body>
+
+<!-- Loading screen shown while Firebase connects -->
+<div id="loadingScreen">
+  <h1 style="font-size:1.6rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase">ROCK AM <span style="color:#e63329">RING</span> 2026</h1>
+  <div class="spinner"></div>
+  <div style="font-size:.75rem;color:var(--text-muted)">Verbinde mit Live-Sync…</div>
+</div>
+
+<div id="syncStatus"><span class="sync-dot" id="syncDot"></span><span id="syncText">Live</span></div>
+<button class="theme-btn" id="themeBtn">🌙</button>
+
+<div class="header">
+  <h1>ROCK AM <span>RING</span> 2026</h1>
+  <div class="header-sub">Gruppe 1 · 5. – 7. Juni 2026 · Nürburgring · Live-Sync aktiv</div>
+</div>
+
+<div style="max-width:1100px;margin:.75rem auto 0;padding:0 1rem">
+  <div class="instructions">
+    <strong>So geht's:</strong> Klick deinen Namen an → dann auf alle Bands, zu denen du willst → bunte Punkte erscheinen sofort bei allen in der Gruppe. Nochmal klicken = abwählen. Die Übersicht ganz unten zeigt wer wohin geht.
+  </div>
+</div>
+
+<div class="participants-wrap">
+  <div class="participants-label">Teilnehmer – klick zum Auswählen</div>
+  <div class="participants" id="participantList"></div>
+</div>
+<div class="controls">
+  <button class="btn-sm" id="clearBtn">Eigene Auswahl löschen</button>
+    <span class="mode-info" id="modeInfo">Niemand aktiv</span>
+</div>
+<div class="day-tabs" id="dayTabs">
+  <button class="day-tab active" data-day="0">Fr. 5.6.</button>
+  <button class="day-tab" data-day="1">Sa. 6.6.</button>
+  <button class="day-tab" data-day="2">So. 7.6.</button>
+</div>
+
+<div class="tt-wrap" id="ttWrap"></div>
+
+<div class="overview-wrap">
+  <div class="overview-title">Übersicht – wer geht wohin?</div>
+  <table class="overview-table">
+    <thead><tr><th>Person</th><th>Freitag</th><th>Samstag</th><th>Sonntag</th></tr></thead>
+    <tbody id="overviewBody"></tbody>
+  </table>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+// ── FIREBASE CONFIG (fest eingebaut) ──────────
+const firebaseConfig = {
+  apiKey: "AIzaSyAJSDaGWqjYmbJyIPJjf32wnnQ_UmieneU",
+  authDomain: "rar-2026.firebaseapp.com",
+  databaseURL: "https://rar-2026-default-rtdb.firebaseio.com",
+  projectId: "rar-2026",
+  storageBucket: "rar-2026.firebasestorage.app",
+  messagingSenderId: "524301364650",
+  appId: "1:524301364650:web:b2f64090fb7db5aac74fd3",
+  measurementId: "G-V1T7S04T5B"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
+
+// ── HELPERS ───────────────────────────────────
+function toMin(t, dayStart) {
+  const [h, m] = t.split(":").map(Number);
+  let mins = h * 60 + m;
+  if (h < dayStart) mins += 1440;
+  return mins;
+}
+
+// ── DATA ──────────────────────────────────────
+const PARTICIPANTS = [
+  {name:"Angie",    color:"#e63329"},
+  {name:"Melissa",  color:"#f59e0b"},
+  {name:"Leon",     color:"#22c55e"},
+  {name:"Christoph",color:"#3b82f6"},
+  {name:"Viki",     color:"#a855f7"},
+  {name:"Kevin",    color:"#06b6d4"},
+  {name:"Maxim",    color:"#f97316"},
+  {name:"Tom",      color:"#84cc16"},
+  {name:"Vero",     color:"#ec4899"},
+  {name:"Pauli",    color:"#14b8a6"},
+  {name:"Jens",     color:"#eab308"},
+  {name:"Michi",    color:"#8b5cf6"},
+];
+
+const MAXIM_PRESELECT = ["Mehnersmoos","We Came as Romans","Magnolia Park","The Plot in You","Architects","Papa Roach","Linkin Park","Limp Bizkit","Paleface Swiss","The Pretty Reckless","Bury Tomorrow","Three Days Grace","Electric Callboy","Ice Nine Kills","Marteria","Bad Omens","Black Veil Brides","Hollywood Undead","Catch Your Breath","President","Kublai Khan TX"];
+
+const DAYS = [
+  { label:"Freitag, 5. Juni", dayStart:14,
+    stages:[
+      { name:"Utopia Stage", bands:[
+        {name:"Mehnersmoos",      start:"14:55",end:"15:50"},
+        {name:"Bush",             start:"16:26",end:"17:20"},
+        {name:"The Hives",        start:"17:56",end:"18:50"},
+        {name:"Architects",       start:"19:20",end:"20:20"},
+        {name:"Papa Roach",       start:"21:00",end:"22:15"},
+        {name:"Linkin Park",      start:"23:00",end:"00:00"},
+      ]},
+      { name:"Mandora Stage", bands:[
+        {name:"Loathe",           start:"14:06",end:"14:50"},
+        {name:"We Came as Romans",start:"15:26",end:"16:05",note:"↔ Mehnersmoos"},
+        {name:"Mastodon",         start:"16:00",end:"16:55"},
+        {name:"The Plot in You",  start:"17:50",end:"18:55"},
+        {name:"Within Temptation",start:"18:25",end:"20:25"},
+        {name:"Trivium",          start:"20:55",end:"22:05"},
+        {name:"Babymetal",        start:"22:45",end:"24:00"},
+        {name:"Limp Bizkit",      start:"00:45",end:"02:00"},
+      ]},
+      { name:"Orbit Stage", bands:[
+        {name:"Slay Squad",           start:"14:55",end:"15:35"},
+        {name:"Magnolia Park",        start:"17:00",end:"17:45"},
+        {name:"Ankor",                start:"18:00",end:"18:40"},
+        {name:"TX2",                  start:"18:10",end:"18:50"},
+        {name:"Don Broco",            start:"19:15",end:"20:00",note:"↔ Architects"},
+        {name:"Drain",                start:"20:25",end:"21:10"},
+        {name:"Malevolence",          start:"21:20",end:"22:25"},
+        {name:"The Funeral Portrait", start:"22:50",end:"23:30"},
+        {name:"Danko Jones",          start:"00:20",end:"01:00"},
+        {name:"The Butcher Sisters",  start:"01:50",end:"03:00"},
+      ]},
+    ]
+  },
+  { label:"Samstag, 6. Juni", dayStart:14,
+    stages:[
+      { name:"Utopia Stage", bands:[
+        {name:"Ecca Vandal",        start:"14:50",end:"15:25"},
+        {name:"The Pretty Reckless",start:"16:00",end:"17:00"},
+        {name:"Tom Morello",        start:"17:35",end:"18:35"},
+        {name:"Three Days Grace",   start:"19:05",end:"20:20"},
+        {name:"Electric Callboy",   start:"21:00",end:"22:30"},
+        {name:"Volbeat",            start:"23:15",end:"01:00"},
+      ]},
+      { name:"Mandora Stage", bands:[
+        {name:"Badflower",    start:"14:50",end:"15:25"},
+        {name:"Paleface Swiss",start:"15:45",end:"16:20",note:"↔ Letlive"},
+        {name:"Bilmuri",      start:"16:40",end:"17:25"},
+        {name:"Bury Tomorrow",start:"17:50",end:"18:45"},
+        {name:"Landmvrks",    start:"19:15",end:"20:15"},
+        {name:"Ice Nine Kills",start:"20:45",end:"21:55"},
+        {name:"Marteria",     start:"22:35",end:"23:50"},
+        {name:"Bad Omens",    start:"00:00",end:"02:00"},
+      ]},
+      { name:"Orbit Stage", bands:[
+        {name:"Max Grimm",    start:"14:30",end:"15:10"},
+        {name:"Letlive",      start:"15:35",end:"16:15",note:"↔ Paleface Swiss"},
+        {name:"The Subways",  start:"16:40",end:"17:20"},
+        {name:"Wargasm",      start:"17:45",end:"18:25"},
+        {name:"Dying Wish",   start:"18:50",end:"19:30"},
+        {name:"High Vis",     start:"19:55",end:"20:40"},
+        {name:"Thornhill",    start:"21:05",end:"21:50"},
+        {name:"The Garden",   start:"22:15",end:"23:05"},
+        {name:"Basement",     start:"23:30",end:"00:15"},
+        {name:"Palaye Royale",start:"00:40",end:"01:40"},
+        {name:"H-Blockx",     start:"02:10",end:"03:00"},
+      ]},
+    ]
+  },
+  { label:"Sonntag, 7. Juni", dayStart:12,
+    stages:[
+      { name:"Utopia Stage", bands:[
+        {name:"Bad Nerves",        start:"12:50",end:"13:40"},
+        {name:"Black Veil Brides", start:"14:15",end:"15:05"},
+        {name:"Hollywood Undead",  start:"15:35",end:"16:35"},
+        {name:"Finch",             start:"17:00",end:"18:15"},
+        {name:"The Offspring",     start:"19:00",end:"20:15"},
+        {name:"Iron Maiden",       start:"21:00",end:"23:00"},
+      ]},
+      { name:"Mandora Stage", bands:[
+        {name:"Return to Dust",   start:"13:35",end:"14:05"},
+        {name:"Blood Incantation",start:"14:25",end:"15:00"},
+        {name:"Bloodywood",       start:"15:30",end:"16:20"},
+        {name:"Breaking Benjamin",start:"16:45",end:"17:40"},
+        {name:"Social Distortion",start:"18:19",end:"19:10"},
+        {name:"Alter Bridge",     start:"19:40",end:"20:40"},
+        {name:"A Perfect Circle", start:"21:20",end:"22:35"},
+        {name:"Sabaton",          start:"22:20",end:"01:00"},
+      ]},
+      { name:"Orbit Stage", bands:[
+        {name:"Mouth Culture",    start:"12:29",end:"13:00"},
+        {name:"Ego Kill Talent",  start:"13:23",end:"14:05"},
+        {name:"Boundaries",       start:"14:30",end:"15:10"},
+        {name:"Gatecreeper",      start:"15:33",end:"16:15"},
+        {name:"Catch Your Breath",start:"16:40",end:"17:20"},
+        {name:"Tesseract",        start:"17:45",end:"18:30"},
+        {name:"President",        start:"18:55",end:"19:45"},
+        {name:"The Story So Far", start:"20:10",end:"20:55"},
+        {name:"Set It Off",       start:"21:20",end:"22:20"},
+        {name:"Kublai Khan TX",   start:"22:50",end:"23:30"},
+        {name:"Sondaschule",      start:"00:20",end:"01:30"},
+      ]},
+    ]
+  },
+];
+
+// ── STATE ─────────────────────────────────────
+const selections = PARTICIPANTS.map(() => new Set());
+let activePersons = new Set();
+let currentDay = 0;
+let ignoreRemote = false;
+let initialSyncDone = false;
+
+// ── FIREBASE SYNC ─────────────────────────────
+function setSyncStatus(state, text) {
+  document.getElementById("syncDot").className = "sync-dot" + (state !== "online" ? " "+state : "");
+  document.getElementById("syncText").textContent = text;
+}
+
+onValue(ref(db, "rar2026/gruppe1/selections"), snap => {
+  if (ignoreRemote) return;
+  const data = snap.val() || {};
+  PARTICIPANTS.forEach((_,pi) => {
+    const bands = data[PARTICIPANTS[pi].name] ? Object.keys(data[PARTICIPANTS[pi].name]) : [];
+    selections[pi] = new Set(bands);
+  });
+
+  // On very first load: if DB is empty, pre-seed Maxim's bands
+  if (!initialSyncDone) {
+    initialSyncDone = true;
+    const hasData = Object.keys(data).length > 0;
+    if (!hasData) {
+      MAXIM_PRESELECT.forEach(b => selections[6].add(b));
+      writeToFirebase();
+    }
+    document.getElementById("loadingScreen").style.display = "none";
+  }
+
+  renderCurrentDay();
+  renderOverview();
+  renderGruppen();
+  renderStats();
+  setSyncStatus("online", "Live-Sync aktiv");
+}, err => {
+  setSyncStatus("offline", "Verbindungsfehler");
+  document.getElementById("loadingScreen").style.display = "none";
+});
+
+function writeToFirebase() {
+  ignoreRemote = true;
+  setSyncStatus("syncing", "Speichert…");
+  const payload = {};
+  PARTICIPANTS.forEach((p,pi) => {
+    payload[p.name] = {};
+    selections[pi].forEach(b => { payload[p.name][b] = true; });
+  });
+  set(ref(db, "rar2026/gruppe1/selections"), payload)
+    .then(() => { setSyncStatus("online","Live-Sync aktiv"); setTimeout(()=>{ignoreRemote=false;},300); })
+    .catch(() => { setSyncStatus("offline","Fehler beim Speichern"); ignoreRemote=false; });
+}
+
+// ── RENDER PARTICIPANTS ───────────────────────
+function renderParticipants() {
+  const list = document.getElementById("participantList");
+  list.innerHTML = "";
+  PARTICIPANTS.forEach((p,i) => {
+    const el = document.createElement("button");
+    el.className = "participant" + (activePersons.has(i) ? " active" : "");
+    el.style.color = p.color;
+    el.innerHTML = `<span class="dot" style="background:${p.color}"></span>${p.name}`;
+    el.onclick = () => {
+      activePersons.has(i) ? activePersons.delete(i) : activePersons.add(i);
+      renderParticipants(); updateModeInfo(); renderCurrentDay();
+    };
+    list.appendChild(el);
+  });
+}
+
+function updateModeInfo() {
+  const info = document.getElementById("modeInfo");
+  if (!activePersons.size) { info.textContent = "Niemand aktiv – klick auf deinen Namen"; return; }
+  info.textContent = "Aktiv: " + [...activePersons].map(i=>PARTICIPANTS[i].name).join(", ");
+}
+
+// ── RENDER TIMETABLE ─────────────────────────
+const PX_PER_MIN = 2.4;
+
+function renderCurrentDay() {
+  const wrap = document.getElementById("ttWrap");
+  wrap.innerHTML = "";
+  const day = DAYS[currentDay];
+  const ds = day.dayStart;
+
+  let allMins = [];
+  day.stages.forEach(st => st.bands.forEach(b => {
+    allMins.push(toMin(b.start, ds));
+    allMins.push(toMin(b.end, ds));
+  }));
+  const startHour = Math.floor(Math.min(...allMins) / 60);
+  const endHour   = Math.ceil(Math.max(...allMins) / 60);
+  const totalPx   = (endHour - startHour) * 60 * PX_PER_MIN;
+
+  const grid = document.createElement("div");
+  grid.className = "tt-grid";
+
+  const corner = document.createElement("div");
+  corner.className = "tt-corner tt-stage-header";
+  grid.appendChild(corner);
+  day.stages.forEach(st => {
+    const h = document.createElement("div");
+    h.className = "tt-stage-header";
+    h.textContent = st.name;
+    grid.appendChild(h);
+  });
+
+  const body = document.createElement("div");
+  body.className = "tt-body";
+  body.style.height = totalPx + "px";
+  body.style.position = "relative";
+  body.style.gridColumn = "1 / -1";
+  body.style.display = "grid";
+  body.style.gridTemplateColumns = "48px 1fr 1fr 1fr";
+
+  const timeCol = document.createElement("div");
+  timeCol.style.cssText = "position:relative;grid-column:1;height:" + totalPx + "px;";
+
+  for (let h = startHour; h <= endHour; h++) {
+    const y = (h - startHour) * 60 * PX_PER_MIN;
+    const tick = document.createElement("div");
+    tick.className = "tt-hour";
+    tick.style.cssText = `position:absolute;top:${y}px;width:100%;height:1px;`;
+    tick.textContent = String(h >= 24 ? h-24 : h).padStart(2,"0") + ":00";
+    timeCol.appendChild(tick);
+
+    const line = document.createElement("div");
+    line.className = "tt-hline";
+    line.style.top = y + "px";
+    body.appendChild(line);
+  }
+  body.appendChild(timeCol);
+
+  day.stages.forEach(stage => {
+    const col = document.createElement("div");
+    col.className = "tt-col";
+    col.style.cssText = "position:relative;height:" + totalPx + "px;";
+
+    stage.bands.forEach(band => {
+      const startM  = toMin(band.start, ds);
+      const endM    = toMin(band.end,   ds);
+      const topPx   = (startM - startHour * 60) * PX_PER_MIN;
+      const heightPx= Math.max((endM - startM) * PX_PER_MIN, 26);
+
+      const card = document.createElement("div");
+      card.className = "tt-card";
+      card.style.top    = topPx + "px";
+      card.style.height = heightPx + "px";
+
+      let activeColor = null;
+      activePersons.forEach(pi => { if(selections[pi].has(band.name)) activeColor = PARTICIPANTS[pi].color; });
+      if (activeColor) { card.classList.add("selected-me"); card.style.setProperty("--active-color", activeColor); }
+
+      const pips = document.createElement("div"); pips.className = "c-pips";
+      PARTICIPANTS.forEach((p,pi) => {
+        if(selections[pi].has(band.name)) {
+          const pip = document.createElement("span");
+          pip.className = "pip"; pip.style.background = p.color; pip.title = p.name;
+          pips.appendChild(pip);
+        }
+      });
+
+      card.innerHTML = `<div class="c-name">${band.name}</div>`
+        + (heightPx > 24 ? `<div class="c-time">${band.start}–${band.end}</div>` : "")
+        + (band.note && heightPx > 38 ? `<div class="c-note">⚡ ${band.note}</div>` : "");
+      card.appendChild(pips);
+
+      card.onclick = () => {
+        if (!activePersons.size) { card.style.animation="shake .3s"; setTimeout(()=>card.style.animation="",300); return; }
+        activePersons.forEach(pi => { selections[pi].has(band.name) ? selections[pi].delete(band.name) : selections[pi].add(band.name); });
+        renderCurrentDay(); renderOverview(); renderGruppen(); writeToFirebase();
+      };
+      col.appendChild(card);
+    });
+    body.appendChild(col);
+  });
+
+  grid.appendChild(body);
+  wrap.appendChild(grid);
+}
+
+// ── OVERVIEW ─────────────────────────────────
+function renderOverview() {
+  const tbody = document.getElementById("overviewBody");
+  tbody.innerHTML = "";
+  PARTICIPANTS.forEach((p,pi) => {
+    const tr = document.createElement("tr");
+    const tdN = document.createElement("td");
+    tdN.innerHTML = `<div class="person-cell"><span class="dot" style="background:${p.color}"></span>${p.name}</div>`;
+    tr.appendChild(tdN);
+    DAYS.forEach(day => {
+      const td = document.createElement("td");
+      const list = document.createElement("div"); list.className = "bands-list";
+      let found = 0;
+      day.stages.forEach(st => st.bands.forEach(band => {
+        if(selections[pi].has(band.name)) {
+          const tag = document.createElement("span"); tag.className = "band-tag";
+          tag.style.background = p.color+"28"; tag.style.color = p.color;
+          tag.style.border = `1px solid ${p.color}55`;
+          tag.textContent = band.name; list.appendChild(tag); found++;
+        }
+      }));
+      if(!found) list.innerHTML = `<span style="color:var(--text-faint);font-size:.62rem">–</span>`;
+      td.appendChild(list); tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+}
+
+
+function getJoke(persons) {
+  if (!persons.length) return "";
+  const names = persons.map(p => p.name);
+  const first = names[0];
+  const last = names[names.length - 1];
+  const mid = names[Math.floor(names.length / 2)];
+  const count = names.length;
+  const all = names.join(", ");
+
+  const pool = [
+    `${first} kennt keinen einzigen Song von denen. Wird aber am lautesten mitsingen.`,
+    `${all} – der kombinierte IQ dieser Gruppe reicht gerade so für einen Crowdsurf.`,
+    `${first} wird behaupten, er war schon Fan bevor die Band überhaupt existiert hat.`,
+    `Wissenschaftlich nicht bewiesen, aber ${first} riecht schon jetzt nach Festival.`,
+    `${count > 1 ? last : first} kommt garantiert zu spät. Wir stehen dann schon drin.`,
+    `${first} wird den ganzen Set lang Reels drehen statt zuzuhören. Klassiker.`,
+    `Hinweis: ${mid} hat heute Morgen nicht geduscht. Die Band weiß es noch nicht.`,
+    `${all} – Gesamtgliedlänge dieser Gruppe: statistisch überdurchschnittlich. Weiteres kein Kommentar.`,
+    `${first} wird nach dem zweiten Song "das war früher besser" sagen.`,
+    `${count > 1 ? `${first} und ${last}` : first} werden sich spätestens beim dritten Song in die Quere kommen.`,
+    `Bitte haltet ${first} vom Merch-Stand fern. Wir reden aus Erfahrung.`,
+    `${first} hat sich extra für heute nicht gewaschen. Nennt es "Festival-Energie".`,
+    `${all} – zusammen ein Körpergewicht von mindestens "ihr wisst es selbst".`,
+    `${first} wird besoffen auf die falsche Stage zeigen und trotzdem Recht haben wollen.`,
+    `Fun fact: ${mid} weiß nicht mal wie die Band heißt. Ist einfach mitgekommen.`,
+    `${first} hat seine Schuhe seit Donnerstag nicht mehr ausgezogen. Man merkt es.`,
+    `${count > 1 ? `${first} bis ${last}` : first} – eine Gruppe, ein Geruch, null Reue.`,
+    `${first} wird den ganzen Pit blockieren und sich wundern warum alle drücken.`,
+    `Achtung: ${last} singt. Und zwar falsch. Den ganzen Song. Laut.`,
+    `${all} – der Sicherheitsabstand zu dieser Gruppe ist freiwillig aber dringend empfohlen.`,
+    `${first} hat sein Portemonnaie "vergessen". Wie immer. Kauf trotzdem für ihn Bier.`,
+    `${mid} ist hier nur wegen dem Bier. Hat die Band noch nie gehört.`,
+    `${first} wird nach dem Set sagen er war in der Front. Er war am Rand neben dem Würstchenstand.`,
+    `Gruppengeruch-Warnstufe: ${count > 2 ? "🟠 erhöht" : "🟡 moderat"}. Bitte Abstand halten.`,
+    `${first} hat heute Morgen noch auf Wikipedia gelesen wer das ist.`,
+    `${all} – was diese Gruppe verbindet? Fragwürdiger Musikgeschmack und schlechte Entscheidungen.`,
+    `${last} wird mitten im Set aufs Klo müssen. Natürlich dann wenn's am besten wird.`,
+    `${first} hat versprochen früh da zu sein. ${first} lügt.`,
+    `Hinweis: niemand in dieser Gruppe hat genug Schlaf. Man sieht's.`,
+    `${count > 1 ? `${first} und ${mid}` : first} haben sich bereits zweimal verlaufen. Das Festival hat gerade erst angefangen.`,
+  ];
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function renderGruppen() {
+  const el = document.getElementById("gruppenContent");
+  const slots = [];
+
+  DAYS.forEach(day => {
+    day.stages.forEach(stage => {
+      stage.bands.forEach(band => {
+        const persons = [];
+        PARTICIPANTS.forEach((p, pi) => {
+          // For gruppe2: shared persons use sharedSelections if available
+          const sel = (typeof sharedSelections !== "undefined" && p.shared)
+            ? (sharedSelections[p.name] || selections[pi])
+            : selections[pi];
+          if (sel.has(band.name)) persons.push({name: p.name, color: p.color});
+        });
+        if (persons.length > 0) {
+          slots.push({
+            dayLabel: day.label,
+            dayStart: day.dayStart,
+            band: band.name,
+            start: band.start,
+            end: band.end,
+            persons
+          });
+        }
+      });
+    });
+  });
+
+  if (!slots.length) {
+    el.innerHTML = '<div class="slot-empty">Noch niemand hat Bands ausgewählt.</div>';
+    return;
+  }
+
+  const byDay = {};
+  DAYS.forEach(d => { byDay[d.label] = []; });
+  slots.forEach(s => byDay[s.dayLabel].push(s));
+  Object.keys(byDay).forEach(dl => {
+    const ds = DAYS.find(d => d.label === dl).dayStart;
+    byDay[dl].sort((a, b) => toMin(a.start, ds) - toMin(b.start, ds));
+  });
+
+  let html = "";
+  DAYS.forEach(day => {
+    const daySlots = byDay[day.label];
+    if (!daySlots.length) return;
+    html += `<div style="margin-bottom:.75rem;">
+      <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:.4rem;">${day.label}</div>`;
+    daySlots.forEach(s => {
+      const joke = getJoke(s.persons);
+      const personTags = s.persons.map(p =>
+        `<span class="slot-person" style="background:${p.color}28;color:${p.color};border:1px solid ${p.color}55">${p.name}</span>`
+      ).join("");
+      html += `<div class="slot-block">
+        <div class="slot-time">${s.start} – ${s.end}</div>
+        <div class="slot-group">
+          <div class="slot-band">${s.band}</div>
+          <div class="slot-people">${personTags}</div>
+        </div>
+        ${joke ? `<div style="font-size:.62rem;color:var(--text-faint);margin-top:4px;font-style:italic;">💬 ${joke}</div>` : ""}
+      </div>`;
+    });
+    html += '</div>';
+  });
+  el.innerHTML = html;
+}
+
+
+function toMinutes(timeStr, dayStart) {
+  const [h, m] = timeStr.split(":").map(Number);
+  const mins = h * 60 + m;
+  return mins < dayStart * 60 ? mins + 1440 : mins;
+}
+
+function renderStats() {
+  const el = document.getElementById("festivalStats");
+  if (!el) return;
+
+  // Build per-person data
+  const personData = PARTICIPANTS.map((p, pi) => {
+    const sel = (typeof sharedSelections !== "undefined" && p.shared && sharedSelections[p.name])
+      ? sharedSelections[p.name]
+      : selections[pi];
+
+    let totalMins = 0;
+    const dayMins = {};
+    DAYS.forEach(day => {
+      dayMins[day.label] = 0;
+      day.stages.forEach(st => st.bands.forEach(band => {
+        if (sel.has(band.name)) {
+          const start = toMinutes(band.start, day.dayStart);
+          const end   = toMinutes(band.end,   day.dayStart);
+          const dur   = end - start;
+          totalMins += dur;
+          dayMins[day.label] += dur;
+        }
+      }));
+    });
+
+    return { name: p.name, color: p.color, totalMins, dayMins, count: sel.size };
+  }).filter(p => p.count > 0);
+
+  if (!personData.length) { el.innerHTML = ""; return; }
+
+  const fmt = m => {
+    const h = Math.floor(m / 60);
+    const min = m % 60;
+    return min > 0 ? `${h}h ${min}m` : `${h}h`;
+  };
+
+  const dayLabels = DAYS.map(d => d.label);
+  const dayShort  = ["Fr", "Sa", "So"];
+
+  let html = `<div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:.75rem;">⏱ Festival-Statistiken</div>`;
+
+  // Section 1: Stunden pro Person
+  html += `<div style="font-size:.65rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem;">Musik-Stunden gesamt</div>`;
+  const sorted = [...personData].sort((a,b) => b.totalMins - a.totalMins);
+  const maxMins = sorted[0].totalMins;
+
+  sorted.forEach(p => {
+    const w = (p.totalMins / maxMins * 100).toFixed(0);
+    html += `<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.35rem;">
+      <div style="width:60px;font-size:.65rem;font-weight:600;color:${p.color};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
+      <div style="flex:1;background:var(--bg-card);border-radius:4px;height:8px;overflow:hidden;">
+        <div style="width:${w}%;height:100%;background:${p.color};border-radius:4px;"></div>
+      </div>
+      <div style="width:42px;font-size:.63rem;color:var(--text-muted);text-align:right;">${fmt(p.totalMins)}</div>
+    </div>`;
+  });
+
+  // Section 2: Lieblingstag pro Person
+  html += `<div style="font-size:.65rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-top:.9rem;margin-bottom:.4rem;">Lieblingstag-Verteilung</div>`;
+  html += `<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:.63rem;">
+    <thead><tr>
+      <th style="text-align:left;padding:3px 6px;color:var(--text-muted);font-weight:600;"></th>
+      ${dayLabels.map((d,i) => `<th style="text-align:center;padding:3px 4px;color:var(--text-muted);font-weight:600;">${dayShort[i]}</th>`).join("")}
+      <th style="text-align:center;padding:3px 4px;color:var(--text-muted);font-weight:600;">🏆</th>
+    </tr></thead><tbody>`;
+
+  personData.forEach(p => {
+    const bestDay = dayLabels.reduce((a, b) => p.dayMins[a] >= p.dayMins[b] ? a : b);
+    const bestIdx = dayLabels.indexOf(bestDay);
+    html += `<tr>
+      <td style="padding:3px 6px;color:${p.color};font-weight:600;">${p.name}</td>
+      ${dayLabels.map((d, i) => {
+        const mins = p.dayMins[d];
+        const isBest = i === bestIdx && mins > 0;
+        return `<td style="text-align:center;padding:3px 4px;color:${isBest ? p.color : 'var(--text-muted)'};font-weight:${isBest ? '700' : '400'};">${mins > 0 ? fmt(mins) : "–"}</td>`;
+      }).join("")}
+      <td style="text-align:center;padding:3px 4px;font-size:.7rem;">${dayShort[bestIdx]}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table></div>`;
+  el.innerHTML = html;
+}
+
+// ── EVENTS ───────────────────────────────────
+document.getElementById("dayTabs").onclick = e => {
+  const btn = e.target.closest(".day-tab"); if(!btn) return;
+  currentDay = parseInt(btn.dataset.day);
+  document.querySelectorAll(".day-tab").forEach(b => b.classList.toggle("active", parseInt(b.dataset.day)===currentDay));
+  renderCurrentDay();
+};
+document.getElementById("clearBtn").onclick = () => {
+  activePersons.forEach(pi => selections[pi].clear());
+  renderCurrentDay(); renderOverview(); renderGruppen(); writeToFirebase();
+};
+
+let isDark = true;
+document.getElementById("themeBtn").onclick = function() {
+  isDark=!isDark;
+  document.documentElement.setAttribute("data-theme",isDark?"dark":"light");
+  this.textContent = isDark?"🌙":"☀️";
+};
+
+
+// ── WETTER (Open-Meteo, Nürburgring) ─────────
+async function loadWetter() {
+  const el = document.getElementById("wetterContent");
+  try {
+    // Festival-Tage: 5–7 Juni 2026
+    const url = "https://api.open-meteo.com/v1/forecast?latitude=50.3356&longitude=6.9475&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,weathercode&timezone=Europe%2FBerlin&start_date=2026-06-05&end_date=2026-06-07";
+    const res = await fetch(url);
+    const data = await res.json();
+    const days = ["Fr 5.6.", "Sa 6.6.", "So 7.6."];
+    const icons = wmoIcon;
+    let html = '<div class="wetter-grid">';
+    data.daily.time.forEach((_, i) => {
+      const code = data.daily.weathercode[i];
+      const max  = Math.round(data.daily.temperature_2m_max[i]);
+      const min  = Math.round(data.daily.temperature_2m_min[i]);
+      const rain = data.daily.precipitation_probability_max[i];
+      const prec = data.daily.precipitation_sum[i].toFixed(1);
+      html += `<div class="wetter-day">
+        <div class="wd-date">${days[i]}</div>
+        <div class="wd-icon">${wmoIcon(code)}</div>
+        <div class="wd-temp">${max}° / ${min}°</div>
+        <div class="wd-info">🌧 ${rain}% · ${prec} mm</div>
+      </div>`;
+    });
+    html += '</div><div style="font-size:.6rem;color:var(--text-faint);margin-top:.5rem;">Quelle: Open-Meteo · Nürburgring · aktualisiert beim Laden</div>';
+    el.innerHTML = html;
+  } catch(e) {
+    el.innerHTML = '<span style="font-size:.75rem;color:var(--text-muted);">Wetterdaten konnten nicht geladen werden.</span>';
+  }
+}
+
+function wmoIcon(code) {
+  if (code === 0) return "☀️";
+  if (code <= 2)  return "🌤️";
+  if (code <= 3)  return "☁️";
+  if (code <= 48) return "🌫️";
+  if (code <= 57) return "🌦️";
+  if (code <= 67) return "🌧️";
+  if (code <= 77) return "❄️";
+  if (code <= 82) return "🌧️";
+  if (code <= 86) return "🌨️";
+  if (code <= 99) return "⛈️";
+  return "🌡️";
+}
+
+// ── GRUPPEN ANZEIGE ───────────────────────────
+
+
+
+
+// ── RANKING & RATING (iPhone-safe, Pfeil-Navigation) ──
+const rankings = {};
+PARTICIPANTS.forEach(p => { rankings[p.name] = { order:[], ratings:{} }; });
+let activeRkPerson = null;
+let ignoreRkRemote = false;
+
+onValue(ref(db, "rar2026/gruppe1/rankings"), snap => {
+  if (ignoreRkRemote) return;
+  const data = snap.val() || {};
+  PARTICIPANTS.forEach(p => {
+    if (data[p.name]) {
+      rankings[p.name].order   = data[p.name].order   || [];
+      rankings[p.name].ratings = data[p.name].ratings || {};
+    }
+  });
+  if (activeRkPerson !== null) renderRkList();
+  renderGroupResults();
+});
+
+function writeRanking(name) {
+  if (!db) return;
+  ignoreRkRemote = true;
+  set(ref(db, "rar2026/gruppe1/rankings/" + name), rankings[name])
+    .then(() => setTimeout(() => { ignoreRkRemote = false; }, 300))
+    .catch(() => { ignoreRkRemote = false; });
+}
+
+function getOrderedBands(pi) {
+  const p = PARTICIPANTS[pi];
+  const selected = [];
+  DAYS.forEach(day => {
+    day.stages.forEach(stage => {
+      stage.bands.forEach(band => {
+        if (selections[pi].has(band.name)) selected.push({ name: band.name, day: day.label.split(",")[0] });
+      });
+    });
+  });
+  const saved = rankings[p.name].order.filter(b => selected.find(s => s.name === b));
+  const unsaved = selected.filter(s => !saved.includes(s.name));
+  return [...saved.map(b => selected.find(s => s.name === b)), ...unsaved];
+}
+
+function renderRkPersonRow() {
+  const el = document.getElementById("rkPersonRow");
+  el.innerHTML = "";
+  PARTICIPANTS.forEach((p,i) => {
+    const btn = document.createElement("button");
+    btn.className = "rp-btn" + (activeRkPerson === i ? " active" : "");
+    btn.style.color = p.color;
+    btn.innerHTML = `<span class="dot" style="background:${p.color}"></span>${p.name}`;
+    btn.onclick = () => {
+      activeRkPerson = activeRkPerson === i ? null : i;
+      renderRkPersonRow();
+      renderRkList();
+    };
+    el.appendChild(btn);
+  });
+}
+
+function renderRkList() {
+  const el = document.getElementById("rkList");
+  if (activeRkPerson === null) {
+    el.innerHTML = '<div class="rk-empty">Wähle deinen Namen oben aus.</div>';
+    return;
+  }
+  const pi = activeRkPerson;
+  const p  = PARTICIPANTS[pi];
+  const bands = getOrderedBands(pi);
+  if (!bands.length) {
+    el.innerHTML = '<div class="rk-empty">Du hast noch keine Bands im Timetable ausgewählt.</div>';
+    return;
+  }
+  // sync order
+  rankings[p.name].order = bands.map(b => b.name);
+
+  const list = document.createElement("div");
+  list.className = "rk-list";
+
+  bands.forEach((band, idx) => {
+    const rating = rankings[p.name].ratings[band.name] || 0;
+    const item = document.createElement("div");
+    item.className = "rk-item";
+
+    // rank number
+    const num = document.createElement("div");
+    num.className = "rk-num";
+    num.textContent = "#" + (idx + 1);
+
+    // arrows
+    const arrows = document.createElement("div");
+    arrows.className = "rk-arrows";
+    const upBtn = document.createElement("button");
+    upBtn.className = "rk-arrow";
+    upBtn.innerHTML = "▲";
+    upBtn.disabled = idx === 0;
+    upBtn.onclick = () => {
+      const order = [...rankings[p.name].order];
+      [order[idx-1], order[idx]] = [order[idx], order[idx-1]];
+      rankings[p.name].order = order;
+      writeRanking(p.name);
+      renderRkList();
+      renderGroupResults();
+    };
+    const downBtn = document.createElement("button");
+    downBtn.className = "rk-arrow";
+    downBtn.innerHTML = "▼";
+    downBtn.disabled = idx === bands.length - 1;
+    downBtn.onclick = () => {
+      const order = [...rankings[p.name].order];
+      [order[idx], order[idx+1]] = [order[idx+1], order[idx]];
+      rankings[p.name].order = order;
+      writeRanking(p.name);
+      renderRkList();
+      renderGroupResults();
+    };
+    arrows.appendChild(upBtn);
+    arrows.appendChild(downBtn);
+
+    // info
+    const info = document.createElement("div");
+    info.className = "rk-info";
+    info.innerHTML = `<div class="rk-name">${band.name}</div><div class="rk-day">${band.day}</div>`;
+
+    // scores 1-10
+    const scores = document.createElement("div");
+    scores.className = "rk-scores";
+    for (let s = 1; s <= 10; s++) {
+      const btn = document.createElement("button");
+      btn.className = "rk-score" + (rating >= s ? " on" : "");
+      btn.textContent = s;
+      btn.onclick = () => {
+        rankings[p.name].ratings[band.name] = s;
+        writeRanking(p.name);
+        renderRkList();
+        renderGroupResults();
+      };
+      scores.appendChild(btn);
+    }
+
+    item.appendChild(num);
+    item.appendChild(arrows);
+    item.appendChild(info);
+    item.appendChild(scores);
+    list.appendChild(item);
+  });
+
+  el.innerHTML = "";
+  el.appendChild(list);
+}
+
+function renderGroupResults() {
+  const el = document.getElementById("grResults");
+  const scores = {};
+  PARTICIPANTS.forEach((p, pi) => {
+    const r = rankings[p.name].ratings;
+    Object.keys(r).forEach(band => {
+      if (!scores[band]) scores[band] = { total:0, count:0, voters:[] };
+      scores[band].total += r[band];
+      scores[band].count++;
+      scores[band].voters.push({ color: PARTICIPANTS[pi].color, name: p.name, score: r[band] });
+    });
+  });
+  const sorted = Object.keys(scores)
+    .map(band => ({ band, avg: scores[band].total / scores[band].count, voters: scores[band].voters }))
+    .sort((a,b) => b.avg - a.avg);
+
+  if (!sorted.length) { el.innerHTML = ""; return; }
+
+  const maxAvg = sorted[0].avg;
+  let html = '<div class="gr-title">📊 Gruppen-Bewertung (Durchschnitt aller)</div>';
+  sorted.forEach((item, idx) => {
+    const w = (item.avg / maxAvg * 100).toFixed(0);
+    const voterDots = item.voters.sort((a,b)=>b.score-a.score)
+      .map(v=>`<div class="gr-dot" style="background:${v.color}" title="${v.name}: ${v.score}/10"></div>`).join("");
+    html += `<div class="gr-item">
+      <div class="gr-pos">#${idx+1}</div>
+      <div class="gr-band">${item.band}</div>
+      <div class="gr-bar-wrap"><div class="gr-bar" style="width:${w}%"></div></div>
+      <div class="gr-score">${item.avg.toFixed(1)}</div>
+      <div class="gr-dots">${voterDots}</div>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+// ── INIT ─────────────────────────────────────
+renderParticipants(); updateModeInfo();
+loadWetter();
+renderRkPersonRow();
+renderGroupResults();
+// timetable renders once Firebase responds (see onValue above)
+</script>
+
+<!-- WETTER WIDGET -->
+<div class="extra-wrap" id="wetterWrap">
+  <div class="section-title">🌤️ Wetter am Nürburgring</div>
+  <div id="wetterContent">
+    <div style="display:flex;align-items:center;gap:.5rem;color:var(--text-muted);font-size:.78rem;">
+      <div class="spinner-sm"></div> Wetterdaten werden geladen…
+    </div>
+  </div>
+</div>
+
+<!-- GRUPPEN ÜBERSICHT -->
+<div class="extra-wrap" id="gruppenWrap">
+  <div class="section-title">👥 Wer ist wann wo?</div>
+  <div id="gruppenContent"></div>
+</div>
+
+
+
+<!-- SPOTIFY -->
+<div class="spotify-wrap">
+  <div class="section-title">🎵 Camping Playlist</div>
+  <a class="spotify-btn" href="https://open.spotify.com/playlist/4ssEAOH85dXix2NvyuXPJJ?si=7e985ae3e0d84b89" target="_blank" rel="noopener">
+    <svg class="spotify-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+    Zur Camping Playlist öffnen
+  </a>
+</div>
+
+<!-- RANKING -->
+<div class="ranking-wrap">
+  <div class="section-title">🏆 Band-Ranking &amp; Bewertung</div>
+  <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.75rem;">
+    Wähle deinen Namen → sortiere deine Bands mit den Pfeilen → vergib eine Wertung 1–10.<br>
+    Alles live sichtbar für alle.
+  </div>
+  <div class="ranking-person-row" id="rkPersonRow"></div>
+  <div id="rkList"></div>
+  <div class="gr-wrap" id="grResults"></div>
+  <div class="gr-wrap" id="festivalStats" style="margin-top:.75rem;"></div>
+</div>
+
+</body>
+</html>

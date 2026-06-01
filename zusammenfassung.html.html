@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rock am Ring 2026 – Gesamtübersicht</title>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+<style>
+:root{--font-body:"Satoshi",sans-serif;--radius-md:.5rem;--radius-lg:.75rem;--radius-full:9999px;--transition:150ms cubic-bezier(0.16,1,0.3,1);}
+[data-theme="dark"]{--bg:#0e0d0b;--surface:#161512;--surface-2:#1d1b18;--border:#2e2c28;--text:#d4d2ce;--text-muted:#6e6c68;--text-faint:#3e3c38;--card-bg:#1a1814;}
+[data-theme="light"]{--bg:#f5f3ef;--surface:#faf9f6;--surface-2:#fff;--border:#e0ddd8;--text:#1a1814;--text-muted:#6e6c68;--text-faint:#c0bdb8;--card-bg:#fff;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100dvh;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+
+#loadingScreen{position:fixed;inset:0;background:var(--bg);z-index:2000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:#e63329;border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+#syncStatus{position:fixed;bottom:12px;right:12px;z-index:500;font-size:.7rem;padding:5px 10px;border-radius:var(--radius-full);border:1px solid var(--border);background:var(--surface);color:var(--text-muted);display:flex;align-items:center;gap:5px;}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;}
+.sync-dot.offline{background:#e63329;}
+
+.theme-btn{position:fixed;top:12px;right:12px;z-index:200;width:34px;height:34px;border-radius:50%;background:var(--surface-2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:1rem;}
+
+.header{text-align:center;padding:1.25rem 1rem 1rem;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+.header h1{font-size:clamp(1.2rem,3vw,1.8rem);font-weight:700;letter-spacing:.06em;text-transform:uppercase;}
+.header h1 span{color:#e63329;}
+.header-sub{font-size:.72rem;color:var(--text-muted);margin-top:2px;letter-spacing:.04em;text-transform:uppercase;}
+.readonly-badge{display:inline-block;background:#e6332922;color:#e63329;border:1px solid #e6332944;border-radius:var(--radius-full);font-size:.62rem;font-weight:700;padding:2px 8px;letter-spacing:.06em;text-transform:uppercase;margin-top:4px;}
+
+.wrap{max-width:1100px;margin:0 auto;padding:0 1rem;}
+.section-title{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:.75rem;padding-bottom:.4rem;border-bottom:1px solid var(--border);}
+.section-wrap{max-width:1100px;margin:.75rem auto;padding:0 1rem 1.5rem;}
+
+/* GROUP BADGES */
+.group-badge{display:inline-block;padding:2px 8px;border-radius:var(--radius-full);font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-left:4px;}
+.g1{background:#3b82f622;color:#3b82f6;border:1px solid #3b82f644;}
+.g2{background:#a855f722;color:#a855f7;border:1px solid #a855f744;}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.5rem;margin-bottom:1rem;}
+.stat-card{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-md);padding:.75rem 1rem;}
+.stat-num{font-size:1.6rem;font-weight:700;color:#e63329;line-height:1;}
+.stat-label{font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
+
+/* PERSON CARDS */
+.person-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.5rem;margin-bottom:1rem;}
+.person-card{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-md);padding:.6rem .75rem;}
+.person-card-header{display:flex;align-items:center;gap:6px;margin-bottom:.4rem;}
+.person-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.person-name{font-size:.8rem;font-weight:700;color:var(--text);}
+.person-count{font-size:.65rem;color:var(--text-muted);}
+.band-tags{display:flex;flex-wrap:wrap;gap:3px;}
+.band-tag-sm{padding:2px 6px;border-radius:var(--radius-full);font-size:.6rem;font-weight:500;}
+
+/* DAY SECTIONS */
+.day-block{margin-bottom:1.5rem;}
+.day-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text);margin-bottom:.5rem;padding:.3rem .5rem;background:var(--surface-2);border-radius:var(--radius-md);border-left:3px solid #e63329;}
+.slot-item{display:flex;align-items:flex-start;gap:.5rem;padding:.35rem 0;border-bottom:1px solid var(--border);}
+.slot-time{font-size:.65rem;font-weight:700;color:#e63329;min-width:80px;flex-shrink:0;}
+.slot-band{font-size:.75rem;font-weight:700;color:var(--text);flex:1;}
+.slot-people{display:flex;flex-wrap:wrap;gap:3px;}
+.slot-person{padding:2px 7px;border-radius:var(--radius-full);font-size:.6rem;font-weight:600;}
+
+/* TOP BANDS */
+.top-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.5rem;}
+.top-item{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-md);padding:.6rem .75rem;display:flex;align-items:center;gap:.6rem;}
+.top-pos{font-size:1rem;font-weight:700;color:var(--text-faint);min-width:24px;}
+.top-info{flex:1;}
+.top-band{font-size:.78rem;font-weight:700;color:var(--text);}
+.top-voters{display:flex;gap:3px;flex-wrap:wrap;margin-top:3px;}
+.top-dot{width:7px;height:7px;border-radius:50%;}
+.top-score{font-size:.8rem;font-weight:700;color:#e63329;}
+
+/* WETTER */
+.wetter-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;}
+.wetter-day{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-md);padding:.6rem .75rem;text-align:center;}
+.wd-date{font-size:.65rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:.3rem;}
+.wd-icon{font-size:1.6rem;line-height:1;margin-bottom:.2rem;}
+.wd-temp{font-size:.85rem;font-weight:700;color:var(--text);}
+.wd-info{font-size:.62rem;color:var(--text-muted);margin-top:.2rem;line-height:1.4;}
+
+/* RANKING BAR */
+.rk-bar-wrap{height:5px;border-radius:3px;background:var(--surface-2);flex:2;}
+.rk-bar{height:100%;border-radius:3px;background:#e63329;transition:width .4s;}
+</style>
+</head>
+<body>
+
+<div id="loadingScreen">
+  <h1 style="font-size:1.6rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase">ROCK AM <span style="color:#e63329">RING</span> 2026</h1>
+  <div class="spinner"></div>
+  <div style="font-size:.75rem;color:var(--text-muted)">Lade Daten beider Gruppen…</div>
+</div>
+
+<div id="syncStatus"><span class="sync-dot" id="syncDot"></span><span id="syncText">Live</span></div>
+<button class="theme-btn" id="themeBtn">🌙</button>
+
+<div class="header">
+  <h1>ROCK AM <span>RING</span> 2026</h1>
+  <div class="header-sub">Gesamtübersicht · Beide Gruppen · Live-Sync</div>
+  <div><span class="readonly-badge">📖 Read-only – nur Ansicht</span></div>
+</div>
+
+<!-- STATS -->
+<div class="section-wrap">
+  <div class="section-title">📊 Auf einen Blick</div>
+  <div class="stats-grid" id="statsGrid"></div>
+</div>
+
+<!-- WETTER -->
+<div class="section-wrap">
+  <div class="section-title">🌤️ Wetter am Nürburgring</div>
+  <div id="wetterContent"><div style="color:var(--text-muted);font-size:.78rem;">Lädt…</div></div>
+</div>
+
+<!-- WER GEHT WOHIN -->
+<div class="section-wrap">
+  <div class="section-title">👥 Wer geht wohin – alle zusammen</div>
+  <div id="werWohin"></div>
+</div>
+
+<!-- PERSONEN ÜBERSICHT -->
+<div class="section-wrap">
+  <div class="section-title">🎟️ Alle Teilnehmer & ihre Bands</div>
+  <div class="person-grid" id="personGrid"></div>
+</div>
+
+<!-- RANKING -->
+<div class="section-wrap">
+  <div class="section-title">🏆 Gruppen-Ranking (Durchschnittsbewertung)</div>
+  <div id="rankingResults"></div>
+</div>
+
+
+<!-- TOP BANDS -->
+<div class="section-wrap">
+  <div class="section-title">🔥 Beliebteste Bands – Top 10</div>
+  <div id="topBandsSection"></div>
+</div>
+
+<!-- SPOTIFY -->
+<div class="section-wrap" style="padding-bottom:3rem;">
+  <div class="section-title">🎵 Camping Playlist</div>
+  <a style="display:inline-flex;align-items:center;gap:.5rem;padding:.65rem 1.4rem;background:#1DB954;color:#000;border-radius:9999px;font-size:.85rem;font-weight:700;text-decoration:none;" href="https://open.spotify.com/playlist/4ssEAOH85dXix2NvyuXPJJ?si=7e985ae3e0d84b89" target="_blank" rel="noopener">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+    Zur Camping Playlist öffnen
+  </a>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAJSDaGWqjYmbJyIPJjf32wnnQ_UmieneU",
+  authDomain: "rar-2026.firebaseapp.com",
+  databaseURL: "https://rar-2026-default-rtdb.firebaseio.com",
+  projectId: "rar-2026",
+  storageBucket: "rar-2026.firebasestorage.app",
+  messagingSenderId: "524301364650",
+  appId: "1:524301364650:web:b2f64090fb7db5aac74fd3",
+};
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
+
+// ── DATA ──────────────────────────────────────
+const GRUPPE1 = [
+  {name:"Angie",    color:"#e63329", group:1},
+  {name:"Melissa",  color:"#f59e0b", group:1},
+  {name:"Leon",     color:"#22c55e", group:1},
+  {name:"Christoph",color:"#3b82f6", group:1},
+  {name:"Viki",     color:"#a855f7", group:1},
+  {name:"Kevin",    color:"#06b6d4", group:1},
+  {name:"Maxim",    color:"#f97316", group:1},
+  {name:"Tom",      color:"#84cc16", group:1},
+  {name:"Vero",     color:"#ec4899", group:1},
+  {name:"Pauli",    color:"#14b8a6", group:1},
+  {name:"Jens",     color:"#eab308", group:1},
+  {name:"Michi",    color:"#8b5cf6", group:1},
+];
+const GRUPPE2 = [
+  {name:"Carsten",  color:"#e63329", group:2},
+  {name:"Jan",      color:"#f59e0b", group:2},
+  {name:"Moritz",   color:"#22c55e", group:2},
+  {name:"Robin",    color:"#3b82f6", group:2},
+  {name:"Toni",     color:"#a855f7", group:2},
+  // Angie: shared, already in GRUPPE1
+  {name:"Anna",     color:"#ec4899", group:2},
+  // Melissa: shared, already in GRUPPE1
+  {name:"Ingo",     color:"#84cc16", group:2},
+  {name:"Marvin",   color:"#14b8a6", group:2},
+  {name:"Max",      color:"#eab308", group:2},
+  {name:"Philipp",  color:"#8b5cf6", group:2},
+  {name:"Eileen",   color:"#f43f5e", group:2},
+];
+const ALL_PERSONS = [...GRUPPE1, ...GRUPPE2];
+
+const DAYS = [
+  { label:"Freitag, 5. Juni", short:"Fr 5.6.", dayStart:14, stages:[
+    { bands:[
+      {name:"Mehnersmoos",start:"14:55",end:"15:50"},{name:"Bush",start:"16:26",end:"17:20"},
+      {name:"The Hives",start:"17:56",end:"18:50"},{name:"Architects",start:"19:20",end:"20:20"},
+      {name:"Papa Roach",start:"21:00",end:"22:15"},{name:"Linkin Park",start:"23:00",end:"00:00"},
+    ]},
+    { bands:[
+      {name:"Loathe",start:"14:06",end:"14:50"},{name:"We Came as Romans",start:"15:26",end:"16:05"},
+      {name:"Mastodon",start:"16:00",end:"16:55"},{name:"The Plot in You",start:"17:50",end:"18:55"},
+      {name:"Within Temptation",start:"18:25",end:"20:25"},{name:"Trivium",start:"20:55",end:"22:05"},
+      {name:"Babymetal",start:"22:45",end:"24:00"},{name:"Limp Bizkit",start:"00:45",end:"02:00"},
+    ]},
+    { bands:[
+      {name:"Slay Squad",start:"14:55",end:"15:35"},{name:"Magnolia Park",start:"17:00",end:"17:45"},
+      {name:"Ankor",start:"18:00",end:"18:40"},{name:"TX2",start:"18:10",end:"18:50"},
+      {name:"Don Broco",start:"19:15",end:"20:00"},{name:"Drain",start:"20:25",end:"21:10"},
+      {name:"Malevolence",start:"21:20",end:"22:25"},{name:"The Funeral Portrait",start:"22:50",end:"23:30"},
+      {name:"Danko Jones",start:"00:20",end:"01:00"},{name:"The Butcher Sisters",start:"01:50",end:"03:00"},
+    ]},
+  ]},
+  { label:"Samstag, 6. Juni", short:"Sa 6.6.", dayStart:14, stages:[
+    { bands:[
+      {name:"Ecca Vandal",start:"14:50",end:"15:25"},{name:"The Pretty Reckless",start:"16:00",end:"17:00"},
+      {name:"Tom Morello",start:"17:35",end:"18:35"},{name:"Three Days Grace",start:"19:05",end:"20:20"},
+      {name:"Electric Callboy",start:"21:00",end:"22:30"},{name:"Volbeat",start:"23:15",end:"01:00"},
+    ]},
+    { bands:[
+      {name:"Badflower",start:"14:50",end:"15:25"},{name:"Paleface Swiss",start:"15:45",end:"16:20"},
+      {name:"Bilmuri",start:"16:40",end:"17:25"},{name:"Bury Tomorrow",start:"17:50",end:"18:45"},
+      {name:"Landmvrks",start:"19:15",end:"20:15"},{name:"Ice Nine Kills",start:"20:45",end:"21:55"},
+      {name:"Marteria",start:"22:35",end:"23:50"},{name:"Bad Omens",start:"00:00",end:"02:00"},
+    ]},
+    { bands:[
+      {name:"Max Grimm",start:"14:30",end:"15:10"},{name:"Letlive",start:"15:35",end:"16:15"},
+      {name:"The Subways",start:"16:40",end:"17:20"},{name:"Wargasm",start:"17:45",end:"18:25"},
+      {name:"Dying Wish",start:"18:50",end:"19:30"},{name:"High Vis",start:"19:55",end:"20:40"},
+      {name:"Thornhill",start:"21:05",end:"21:50"},{name:"The Garden",start:"22:15",end:"23:05"},
+      {name:"Basement",start:"23:30",end:"00:15"},{name:"Palaye Royale",start:"00:40",end:"01:40"},
+      {name:"H-Blockx",start:"02:10",end:"03:00"},
+    ]},
+  ]},
+  { label:"Sonntag, 7. Juni", short:"So 7.6.", dayStart:12, stages:[
+    { bands:[
+      {name:"Bad Nerves",start:"12:50",end:"13:40"},{name:"Black Veil Brides",start:"14:15",end:"15:05"},
+      {name:"Hollywood Undead",start:"15:35",end:"16:35"},{name:"Finch",start:"17:00",end:"18:15"},
+      {name:"The Offspring",start:"19:00",end:"20:15"},{name:"Iron Maiden",start:"21:00",end:"23:00"},
+    ]},
+    { bands:[
+      {name:"Return to Dust",start:"13:35",end:"14:05"},{name:"Blood Incantation",start:"14:25",end:"15:00"},
+      {name:"Bloodywood",start:"15:30",end:"16:20"},{name:"Breaking Benjamin",start:"16:45",end:"17:40"},
+      {name:"Social Distortion",start:"18:19",end:"19:10"},{name:"Alter Bridge",start:"19:40",end:"20:40"},
+      {name:"A Perfect Circle",start:"21:20",end:"22:35"},{name:"Sabaton",start:"22:20",end:"01:00"},
+    ]},
+    { bands:[
+      {name:"Mouth Culture",start:"12:29",end:"13:00"},{name:"Ego Kill Talent",start:"13:23",end:"14:05"},
+      {name:"Boundaries",start:"14:30",end:"15:10"},{name:"Gatecreeper",start:"15:33",end:"16:15"},
+      {name:"Catch Your Breath",start:"16:40",end:"17:20"},{name:"Tesseract",start:"17:45",end:"18:30"},
+      {name:"President",start:"18:55",end:"19:45"},{name:"The Story So Far",start:"20:10",end:"20:55"},
+      {name:"Set It Off",start:"21:20",end:"22:20"},{name:"Kublai Khan TX",start:"22:50",end:"23:30"},
+      {name:"Sondaschule",start:"00:20",end:"01:30"},
+    ]},
+  ]},
+];
+
+function toMin(t, ds) {
+  const [h,m] = t.split(":").map(Number);
+  let mins = h*60+m;
+  if (h < ds) mins += 1440;
+  return mins;
+}
+
+// All bands flat
+const ALL_BANDS = [];
+DAYS.forEach(day => day.stages.forEach(stage => stage.bands.forEach(b => {
+  if (!ALL_BANDS.find(x=>x.name===b.name)) ALL_BANDS.push({...b, dayLabel:day.label, dayShort:day.short});
+})));
+
+// ── STATE ─────────────────────────────────────
+const sel1 = {};  // name -> Set<bandname>
+const sel2 = {};  // name -> Set<bandname>
+const rk1  = {};  // name -> {ratings:{}}
+const rk2  = {};  // name -> {ratings:{}}
+GRUPPE1.forEach(p => { sel1[p.name] = new Set(); rk1[p.name] = {ratings:{}}; });
+GRUPPE2.forEach(p => { sel2[p.name] = new Set(); rk2[p.name] = {ratings:{}}; });
+
+let loaded1sel = false, loaded1rk = false, loaded2sel = false, loaded2rk = false;
+function checkLoaded() {
+  if (loaded1sel && loaded1rk && loaded2sel && loaded2rk) {
+    document.getElementById("loadingScreen").style.display = "none";
+    renderAll();
+  }
+}
+
+onValue(ref(db,"rar2026/gruppe1/selections"), snap => {
+  const data = snap.val()||{};
+  GRUPPE1.forEach(p => { sel1[p.name] = new Set(data[p.name]?Object.keys(data[p.name]):[]); });
+  loaded1sel = true; checkLoaded(); if(loaded2sel&&loaded2rk&&loaded1rk) renderAll();
+});
+onValue(ref(db,"rar2026/gruppe1/rankings"), snap => {
+  const data = snap.val()||{};
+  GRUPPE1.forEach(p => { if(data[p.name]) rk1[p.name] = data[p.name]; });
+  loaded1rk = true; checkLoaded(); if(loaded2sel&&loaded1sel&&loaded2rk) renderAll();
+});
+onValue(ref(db,"rar2026/gruppe2/selections"), snap => {
+  const data = snap.val()||{};
+  GRUPPE2.forEach(p => { sel2[p.name] = new Set(data[p.name]?Object.keys(data[p.name]):[]); });
+  loaded2sel = true; checkLoaded(); if(loaded1sel&&loaded1rk&&loaded2rk) renderAll();
+});
+onValue(ref(db,"rar2026/gruppe2/rankings"), snap => {
+  const data = snap.val()||{};
+  GRUPPE2.forEach(p => { if(data[p.name]) rk2[p.name] = data[p.name]; });
+  loaded2rk = true; checkLoaded(); if(loaded1sel&&loaded1rk&&loaded2sel) renderAll();
+}, err => {
+  document.getElementById("syncDot").className="sync-dot offline";
+  document.getElementById("syncText").textContent="Verbindungsfehler";
+  document.getElementById("loadingScreen").style.display="none";
+});
+
+function getSelSet(p) { return p.group===1 ? sel1[p.name] : sel2[p.name]; }
+function getRk(p)     { return p.group===1 ? (rk1[p.name]||{ratings:{}}) : (rk2[p.name]||{ratings:{}}); }
+
+function renderTopBands() {
+  const el = document.getElementById("topBandsSection");
+  if (!el) return;
+
+  const cnt = {};
+  const voterMap = {};
+  ALL_PERSONS.forEach(p => {
+    getSelSet(p).forEach(b => {
+      cnt[b] = (cnt[b] || 0) + 1;
+      if (!voterMap[b]) voterMap[b] = [];
+      voterMap[b].push(p);
+    });
+  });
+
+  const top10 = Object.entries(cnt).sort((a,b) => b[1]-a[1]).slice(0,10);
+  if (!top10.length) { el.innerHTML = '<div style="color:var(--text-muted);font-size:.75rem;">Noch keine Auswahlen.</div>'; return; }
+
+  const maxVotes = top10[0][1];
+  const total = ALL_PERSONS.length;
+  let html = "";
+
+  top10.forEach(([band, votes], i) => {
+    const w = (votes / maxVotes * 100).toFixed(0);
+    const dots = voterMap[band].map(p =>
+      `<span title="${p.name}" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${p.color};margin-right:2px;flex-shrink:0;"></span>`
+    ).join("");
+    html += `<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;">
+      <div style="width:18px;font-size:.6rem;color:var(--text-muted);text-align:right;flex-shrink:0;">#${i+1}</div>
+      <div style="width:115px;font-size:.67rem;font-weight:600;color:var(--text-primary,#fff);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;">${band}</div>
+      <div style="flex:1;background:var(--bg-card,#ffffff12);border-radius:4px;height:7px;overflow:hidden;min-width:40px;">
+        <div style="width:${w}%;height:100%;background:linear-gradient(90deg,#f97316,#e63329);border-radius:4px;transition:width .4s;"></div>
+      </div>
+      <div style="width:26px;font-size:.65rem;font-weight:700;color:var(--text-primary,#fff);text-align:right;flex-shrink:0;">${votes}x</div>
+      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:1px;min-width:50px;">${dots}</div>
+    </div>`;
+  });
+
+  el.innerHTML = html;
+}
+
+function renderAll() {
+  renderStats();
+  renderWerWohin();
+  renderPersonGrid();
+  renderRankingResults();
+}
+
+function renderStats() {
+  const el = document.getElementById("statsGrid");
+  const totalPersons = ALL_PERSONS.length;
+  const totalSelections = ALL_PERSONS.reduce((acc,p)=>acc+getSelSet(p).size,0);
+  const allSelectedBands = new Set();
+  ALL_PERSONS.forEach(p => getSelSet(p).forEach(b=>allSelectedBands.add(b)));
+  const hotBand = (() => {
+    const cnt = {};
+    ALL_PERSONS.forEach(p => getSelSet(p).forEach(b=>{ cnt[b]=(cnt[b]||0)+1; }));
+    return Object.entries(cnt).sort((a,b)=>b[1]-a[1])[0];
+  })();
+  el.innerHTML = `
+    <div class="stat-card"><div class="stat-num">${totalPersons}</div><div class="stat-label">Teilnehmer gesamt</div></div>
+    <div class="stat-card"><div class="stat-num">${allSelectedBands.size}</div><div class="stat-label">verschiedene Bands</div></div>
+    <div class="stat-card"><div class="stat-num">${totalSelections}</div><div class="stat-label">Gesamtauswahlen</div></div>
+    <div class="stat-card"><div class="stat-num" style="font-size:.95rem">${hotBand?hotBand[0]:'–'}</div><div class="stat-label">Beliebteste Band (${hotBand?hotBand[1]:0}x)</div></div>
+  `;
+}
+
+function renderWerWohin() {
+  const el = document.getElementById("werWohin");
+  let html = "";
+  DAYS.forEach(day => {
+    const slots = [];
+    day.stages.forEach(stage => {
+      stage.bands.forEach(band => {
+        const persons = ALL_PERSONS.filter(p => getSelSet(p).has(band.name));
+        if (persons.length) slots.push({band, persons});
+      });
+    });
+    if (!slots.length) return;
+    slots.sort((a,b) => toMin(a.band.start,day.dayStart)-toMin(b.band.start,day.dayStart));
+    html += `<div class="day-block"><div class="day-label">${day.label}</div>`;
+    slots.forEach(s => {
+      const personTags = s.persons.map(p => {
+        const badge = p.group===1?'<span class="group-badge g1">G1</span>':'<span class="group-badge g2">G2</span>';
+        return `<span class="slot-person" style="background:${p.color}28;color:${p.color};border:1px solid ${p.color}55">${p.name}${badge}</span>`;
+      }).join("");
+      html += `<div class="slot-item">
+        <div class="slot-time">${s.band.start}–${s.band.end}</div>
+        <div class="slot-band">${s.band.name}</div>
+        <div class="slot-people">${personTags}</div>
+      </div>`;
+    });
+    html += "</div>";
+  });
+  el.innerHTML = html || '<div style="color:var(--text-muted);font-size:.78rem;">Noch keine Auswahlen vorhanden.</div>';
+}
+
+function renderPersonGrid() {
+  const el = document.getElementById("personGrid");
+  el.innerHTML = "";
+  ALL_PERSONS.forEach(p => {
+    const bands = [...getSelSet(p)];
+    const card = document.createElement("div");
+    card.className = "person-card";
+    const badge = p.group===1?'<span class="group-badge g1">G1</span>':'<span class="group-badge g2">G2</span>';
+    let tagsHtml = bands.length
+      ? bands.map(b=>`<span class="band-tag-sm" style="background:${p.color}28;color:${p.color};border:1px solid ${p.color}44">${b}</span>`).join("")
+      : `<span style="color:var(--text-faint);font-size:.62rem">Noch nichts ausgewählt</span>`;
+    card.innerHTML = `
+      <div class="person-card-header">
+        <div class="person-dot" style="background:${p.color}"></div>
+        <div>
+          <div class="person-name">${p.name} ${badge}</div>
+          <div class="person-count">${bands.length} Band${bands.length!==1?'s':''}</div>
+        </div>
+      </div>
+      <div class="band-tags">${tagsHtml}</div>
+    `;
+    el.appendChild(card);
+  });
+}
+
+function renderRankingResults() {
+  const el = document.getElementById("rankingResults");
+  const scores = {};
+  ALL_PERSONS.forEach(p => {
+    const r = getRk(p).ratings||{};
+    Object.keys(r).forEach(band => {
+      if (!scores[band]) scores[band]={total:0,count:0,voters:[]};
+      scores[band].total += r[band];
+      scores[band].count++;
+      scores[band].voters.push({name:p.name,color:p.color,score:r[band],group:p.group});
+    });
+  });
+  const sorted = Object.keys(scores)
+    .map(band=>({band,avg:scores[band].total/scores[band].count,voters:scores[band].voters}))
+    .sort((a,b)=>b.avg-a.avg);
+  if (!sorted.length) { el.innerHTML='<div style="color:var(--text-muted);font-size:.78rem;">Noch keine Bewertungen abgegeben.</div>'; return; }
+  const maxAvg = sorted[0].avg;
+  let html = '<div style="display:flex;flex-direction:column;gap:.35rem;">';
+  sorted.forEach((item,idx) => {
+    const w = (item.avg/maxAvg*100).toFixed(0);
+    const dots = item.voters.sort((a,b)=>b.score-a.score).map(v=>`<div class="top-dot" style="background:${v.color}" title="${v.name} (G${v.group}): ${v.score}/10"></div>`).join("");
+    html += `<div class="slot-item">
+      <div class="slot-time" style="min-width:24px;color:var(--text-faint);font-size:.7rem;">#${idx+1}</div>
+      <div class="slot-band">${item.band}</div>
+      <div class="rk-bar-wrap"><div class="rk-bar" style="width:${w}%"></div></div>
+      <div style="font-size:.75rem;font-weight:700;color:#e63329;min-width:34px;text-align:right">${item.avg.toFixed(1)}</div>
+      <div style="display:flex;gap:2px;flex-wrap:wrap;min-width:50px;justify-content:flex-end">${dots}</div>
+    </div>`;
+  });
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+// ── WETTER ────────────────────────────────────
+async function loadWetter() {
+  const el = document.getElementById("wetterContent");
+  try {
+    const url = "https://api.open-meteo.com/v1/forecast?latitude=50.3356&longitude=6.9475&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,weathercode&timezone=Europe%2FBerlin&start_date=2026-06-05&end_date=2026-06-07";
+    const res = await fetch(url);
+    const data = await res.json();
+    const days = ["Fr 5.6.","Sa 6.6.","So 7.6."];
+    const icons = code => {
+      if(code===0)return"☀️";if(code<=2)return"🌤️";if(code<=3)return"☁️";
+      if(code<=48)return"🌫️";if(code<=57)return"🌦️";if(code<=67)return"🌧️";
+      if(code<=77)return"❄️";if(code<=82)return"🌧️";if(code<=99)return"⛈️";return"🌡️";
+    };
+    let html = '<div class="wetter-grid">';
+    data.daily.time.forEach((_,i) => {
+      const code=data.daily.weathercode[i];
+      const max=Math.round(data.daily.temperature_2m_max[i]);
+      const min=Math.round(data.daily.temperature_2m_min[i]);
+      const rain=data.daily.precipitation_probability_max[i];
+      const prec=data.daily.precipitation_sum[i].toFixed(1);
+      html+=`<div class="wetter-day"><div class="wd-date">${days[i]}</div><div class="wd-icon">${icons(code)}</div><div class="wd-temp">${max}° / ${min}°</div><div class="wd-info">🌧 ${rain}% · ${prec} mm</div></div>`;
+    });
+    html+='</div><div style="font-size:.6rem;color:var(--text-faint);margin-top:.5rem;">Open-Meteo · Nürburgring · aktualisiert beim Laden</div>';
+    el.innerHTML = html;
+  } catch(e) {
+    el.innerHTML = '<span style="color:var(--text-muted);font-size:.75rem;">Wetterdaten konnten nicht geladen werden.</span>';
+  }
+}
+
+// ── THEME ─────────────────────────────────────
+let isDark=true;
+document.getElementById("themeBtn").onclick=function(){
+  isDark=!isDark;
+  document.documentElement.setAttribute("data-theme",isDark?"dark":"light");
+  this.textContent=isDark?"🌙":"☀️";
+};
+
+loadWetter();
+</script>
+</body>
+</html>
